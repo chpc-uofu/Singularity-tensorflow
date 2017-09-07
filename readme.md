@@ -1,8 +1,18 @@
-Create TensorFlow singularity container at CHPC CentOS7 machines
+## Create TensorFlow singularity 2.3 container at CHPC CentOS7 machines
 
-Important detail for GPU support - the container must have the same version of NVidia libraries as the host. These libraries are part of the NVidia driver package, and include libcuda.so and others (the CUDA distribution does not supply libcuda.so).
+We are using the Singularity 2.3+ `--nv` flag to bring in the Nvidia driver stack from the host. This only works for the execution commands (`exec`, `shell`, etc.), not for bootstrap, but, installations inside bootstrap dont necessarily need the GPU access. `%post` testing is a different story - as the GPU driver stack is not in during the `%post`, instead of running tests in `%post` during bootstrap, we do it after bootstrap with `singularity exec`.
 
-CHPC specifics as of March 2017 - using CentOS7 RPM package for NVidia driver libraries, which version (367.48) differs from the multi-distro binaries. Therefore we need to extract the NVidia libraries from RPM.
+Thanks to the `--nv` command this container should be independent from the host GPU driver version.
+
+Another difference from Singularity 2.2 strategy is the use of the TensorFlow docker image during bootstrap. This alleviates the need to install TF and its dependencies manually.
+
+To run TF in the container, simply
+```
+ml singularity
+singularity exec --nv ubuntu_tensorflow_gpu.img my-tf-program.py
+```
+
+### Notes from the previous TF container
 
 Required packages:
 - NVidia driver libraries RPM - xorg-x11-drv-nvidia-libs-367.48-1.el7.x86_64.rpm
